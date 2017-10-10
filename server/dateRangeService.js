@@ -73,10 +73,12 @@ const parseDates = (phrase) => {
 };
 
 const createDateBlock = (dt, timeRanges) => {
-  let start = moment(`${dt}T${timeRanges[0]}`);
+
+  let isArray = Array.isArray(timeRanges);
+  let start = isArray ? moment(`${dt}T${timeRanges[0]}`) : moment(`${dt}T${timeRanges}`);
   let end;
 
-  if (timeRanges.length < 2) {
+  if (!isArray || timeRanges.length < 2) {
     //We don't have a time-range, so default it to an hour
     end = moment(start).add(1, 'hour');
   } else {
