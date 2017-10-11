@@ -33,6 +33,7 @@ class App extends Component {
         } else if (results.result && results.result.length > 0) {
           let blocks = this.state.dateBlocks;
           blocks = _.concat(blocks, { phrase: this.state.value, dates: results.result });
+          blocks = _.reverse(blocks);
           this.setState({ dateBlocks: blocks, spinner: false });
         }
         this.setState({ spinner: false });
