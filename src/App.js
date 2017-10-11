@@ -41,8 +41,8 @@ class App extends Component {
 
   buildDates = (dates) => {
     return dates.map(date => {
-      let start = moment(date.startDate).local().format("ddd MM-DD-YYYY h:mma");
-      let end = moment(date.endDate).local().format("h:mma");
+      let start = moment(date.startDate).format("ddd MM-DD-YYYY h:mma");
+      let end = moment(date.endDate).format("h:mma");
       return (
         <h3><Label>{start} - {end}</Label></h3>
       )

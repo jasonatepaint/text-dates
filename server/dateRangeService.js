@@ -92,8 +92,8 @@ const createDateBlock = (dt, timeRanges) => {
   }
 
   return {
-    startDate: start,
-    endDate: end
+    startDate: start.format("YYYY-MM-DDTHH:mm:ss"),
+    endDate: end.format("YYYY-MM-DDTHH:mm:ss")
   }
 };
 
