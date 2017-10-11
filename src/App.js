@@ -25,7 +25,7 @@ class App extends Component {
   };
 
   getDateBlock = () => {
-    this.setState({ spinner: true, isError: false });
+    this.setState({ spinner: true, errorMessage: null });
     return fetchData("/api/dates", "POST", { phrase: this.state.value })
       .then(results => {
         if (!results.success) {

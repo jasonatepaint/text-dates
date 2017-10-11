@@ -52,6 +52,12 @@ const parseDates = (phrase) => {
         if (ts.timeDeclaration === "between")
             operator = "through";
 
+        //If the time-portion of the phrase is interpreted as a range,
+        //we want to split this period and set the 'times' array so
+        //the remaining logic works with the array of times
+        if (ts.timePeriod)
+          ts.times = ts.timePeriod.split('/');
+
         switch(operator) {
           case "and":
           case "or":
@@ -109,9 +115,10 @@ const validateResult = (response) => {
     return createResponse(false, null, "No Dates found")
   }
 
+
+
   if (!parameters.timeSpan ||
-    !parameters.timeSpan.times ||
-    !parameters.timeSpan.times.length === 0) {
+    (!parameters.timeSpan.times || !parameters.timeSpan.times.length === 0) & !parameters.timeSpan.timePeriod) {
     return createResponse(false, null, "No times found")
   }
 
