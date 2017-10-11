@@ -5,11 +5,13 @@ import './App.css';
 import fetchData from './services/fetchData';
 import _ from 'lodash';
 import moment from 'moment';
+import annyang from 'annyang';
+import FontAwesome from 'react-fontawesome';
 
 class App extends Component {
 
   constructor(props)  {
-    super(props);
+    super(props); 
     this.state = {
       value: '',
       spinner: false,
@@ -47,13 +49,23 @@ class App extends Component {
     });
   };
 
+  setAnnyangCallback = (phrases) => {
+    this.setState( {value: phrases[0]} );
+    annyang.abort();
+  }
+
+  handleMicrophoneClick = (e) => { 
+    e.preventDefault();
+    annyang.addCallback('result', this.setAnnyangCallback);
+    annyang.start();
+  };
+
   render() {
     return (
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
         </header>
-
         <div className="date-label">Enter the dates and times you're available</div>
         <FormControl
           className="date-input"
@@ -62,6 +74,13 @@ class App extends Component {
           placeholder="Enter your availability..."
           onChange={this.handleChange}
         />
+        <span onClick={(event) => this.handleMicrophoneClick(event)}>
+          <FontAwesome 
+            name="microphone"
+            size="2x"
+            className="availability-mic" 
+          />
+        </span>
         <Button bsStyle="primary" onClick={this.getDateBlock}>Add Availability Block</Button>
         <div className="examples">
           <b>Examples</b>
