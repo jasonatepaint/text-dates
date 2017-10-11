@@ -61,9 +61,13 @@ const parseDates = (phrase) => {
         switch(operator) {
           case "and":
           case "or":
-            //Add the date for each time since they aren't to be treated as a range
-            //TODO: Need to consolidate dates IF any time block intersect (e.g. 2p-3p and 3p-4p should resolve to 2pm-4pm)
-            ts.times.forEach(time => dateBlocks.push(createDateBlock(dt, [time])));
+            if (Array.isArray(ts.times)){
+              //Add the date for each time since they aren't to be treated as a range
+              //TODO: Need to consolidate dates IF any time block intersect (e.g. 2p-3p and 3p-4p should resolve to 2pm-4pm)
+              ts.times.forEach(time => dateBlocks.push(createDateBlock(dt, [time])));
+            } else {
+              dateBlocks.push(createDateBlock(dt, ts.times));
+            }
             break;
           case "through":
           default:
