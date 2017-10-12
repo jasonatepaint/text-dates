@@ -21,13 +21,18 @@
     "react-scripts": "1.0.14",
     "uuid": "3.1.0"
   },
+  "devDependencies": {
+    "chai": "4.1.2",
+    "mocha": "3.5.3"
+  },
   "scripts": {
     "start": "node server.js",
     "local": "source etc/local.env && react-scripts start",
     "local-server": "source etc/local.env && node server.js",
     "postinstall": "npm run build",
     "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
+    "test-react": "react-scripts test --env=jsdom",
+    "test": "mocha --timeout 0 --ui tdd test/*.js",
     "eject": "react-scripts eject"
   },
   "homepage": "./",
