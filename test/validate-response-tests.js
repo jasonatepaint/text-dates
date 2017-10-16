@@ -42,15 +42,7 @@ suite('Validate Text-to-Speech Responses', function() {
     assert.equal(svc.VALIDATION_MSGS.noDates, actual.msg);
   });
 
-  test('Missing timespan', () => {
-    let response = testUtils.buildResponse([ "2017-03-13" ], null);
-    delete response.result.parameters.timeSpan;  //wipe out timeSpan property
-    let actual = svc.validateResponse(response);
-    assert.isFalse(actual.success);
-    assert.equal(svc.VALIDATION_MSGS.noTimes, actual.msg);
-  });
-
-  test('Missing time properties (times & timePeriod)', () => {
+  test('Missing times property', () => {
     let response = testUtils.buildResponse([ "2017-03-13" ], null);
     let actual = svc.validateResponse(response);
     assert.isFalse(actual.success);
@@ -70,8 +62,14 @@ suite('Validate Text-to-Speech Responses', function() {
     assert.isTrue(actual.success);
   });
 
-  test('valid as timePeriod', () => {
+  test('valid as time range', () => {
     let response = testUtils.buildResponse([ "2017-03-13" ], null, "09:00/10:00", null, null, true);
+    let actual = svc.validateResponse(response);
+    assert.isTrue(actual.success);
+  });
+
+  test('valid as integer time', () => {
+    let response = testUtils.buildResponse([ "2017-03-13" ], null, 9, null, null, true);
     let actual = svc.validateResponse(response);
     assert.isTrue(actual.success);
   });

@@ -30,60 +30,50 @@ const processTtsResponse = (response) => {
 
   let validate = validateResponse(response);
   if (!validate.success)
-    return validate;
+    return createResponse(false, null, validate.msg);
 
   let result = response.result;
   let parameters = result.parameters;
   let dateBlocks = [];
-
-  //Get all the Dates w/o times
   let dates = [];
-  if (parameters.dates.length > 1) {
-    switch(parameters.datesOperator) {
-      case "through":
-        dates = utils.getDateArrayByRange(parameters.dates);
-        break;
-      case "and":
-      case "or":
-      default:
-        parameters.dates.forEach(dt => dates.push(moment(dt)));
-        break;
-    }
+
+  //If Date is not an array, it could be a single date (or a range in 'date1/date2' form)
+  let isDateRange = false;
+  if (!Array.isArray(parameters.date.dates)) {
+    parameters.date.dates = parameters.date.dates.split('/');
+    if (parameters.date.dates.length > 1)
+      isDateRange = true;
   } else {
-    dates.push(moment(parameters.dates[0]));
+    if (parameters.date.operator === "through")
+      isDateRange = true;
+  }
+
+  //Create dates w/o times attached
+  if (isDateRange) {
+    dates = utils.getDateArrayByRange(parameters.date.dates);
+  } else {
+    parameters.date.dates.forEach(dt => dates.push(moment(dt)));
+  }
+
+  //if times is not an array, it could be a single time (or a range in 'time1/time2' form)
+  let isTimeRange = false;
+  if (!Array.isArray(parameters.time.times)) {
+    parameters.time.times = _.isInteger(parameters.time.times) ? [ parameters.time.times ] : parameters.time.times.split('/');
+    if (parameters.time.times.length > 1)
+      isTimeRange = true;
+  } else {
+    isTimeRange = (parameters.time.timeDeclaration === "between" | parameters.time.operator === "through") === 1
   }
 
   //Build out the dates appending the time ranges.
-  let ts = parameters.timeSpan;
   for (let i in dates) {
     let dt = dates[i].format(utils.dateFormats.dateOnly);
 
-    //If the declaration is "between", we should treat the operation as a time-range
-    let operator = ts.operator;
-    if (ts.timeDeclaration === "between")
-      operator = "through";
-
-    //If the time-portion of the phrase is interpreted as a range,
-    //we want to split this period and set the 'times' array so
-    //the remaining logic works with the array of times
-    //Note: If we have a timePeriod, we wouldn't have a 'times' property
-    if (ts.timePeriod)
-      ts.times = ts.timePeriod.split('/');
-
-    switch(operator) {
-      case "and":
-      case "or":
-        if (Array.isArray(ts.times)){
-          //Add the date for each time since they aren't to be treated as a range
-          ts.times.forEach(time => dateBlocks.push(createDateBlock(dt, [time])));
-        } else {
-          dateBlocks.push(createDateBlock(dt, ts.times));
-        }
-        break;
-      case "through":
-      default:
-        dateBlocks.push(createDateBlock(dt, ts.times));
-        break;
+    if (isTimeRange) {
+      dateBlocks.push(createDateBlock(dt, parameters.time.times));
+    } else {
+      //Add the date for each time since they aren't to be treated as a range
+      parameters.time.times.forEach(time => dateBlocks.push(createDateBlock(dt, [time])));
     }
   }
 
@@ -157,8 +147,8 @@ const createDateBlock = (dt, timeRanges) => {
   }
 
   /***********************************************
-  * Adjust Times based on start/end of business
-  **********************************************/
+   * Adjust Times based on start/end of business
+   **********************************************/
   let startAdjusted;
   if (start.hour() < START_OF_BUSINESS) {
     startAdjusted = 12;
@@ -170,6 +160,10 @@ const createDateBlock = (dt, timeRanges) => {
 
   if (startAdjusted)
     end = end.add(startAdjusted, 'hours');
+
+  //End time was interpreted as wrong time of day (AM vs PM)
+  if (end < start)
+    end = end.add(12, 'hours');
 
   //StartDate already occurred. This probably happened because the day
   //requested is the current day and a/i hasn't moved a week ahead
@@ -191,25 +185,24 @@ const validateResponse = (response) => {
 
   //Bad result, could not parse phrase
   if (result.actionIncomplete) {
-    return createResponse(false, null, result.fulfillment.messages[0].speech)
+    return createValidationResult(result.fulfillment.messages[0].speech)
   }
 
   if (!result.parameters) {
-    return createResponse(false, null, VALIDATION_MSGS.invalid);
+    return createValidationResult(VALIDATION_MSGS.invalid);
   }
 
   let parameters = result.parameters;
 
-  if (!parameters.dates || parameters.dates.length === 0) {
-    return createResponse(false, null, VALIDATION_MSGS.noDates)
+  if (!_.isObject(parameters.date) || !parameters.date.dates || parameters.date.dates.length === 0) {
+    return createValidationResult(VALIDATION_MSGS.noDates)
   }
 
-  if (!parameters.timeSpan ||
-    (!parameters.timeSpan.times || parameters.timeSpan.times.length === 0) && !parameters.timeSpan.timePeriod) {
-    return createResponse(false, null, VALIDATION_MSGS.noTimes)
+  if (!_.isObject(parameters.time) || !parameters.time.times || (parameters.time.times.length === 0 & !_.isNumber(parameters.time.times))){
+    return createValidationResult(VALIDATION_MSGS.noTimes);
   }
 
-  return createResponse(true);
+  return createValidationResult(null, true);
 };
 
 const createResponse = (success, result, msg) => {
@@ -217,6 +210,13 @@ const createResponse = (success, result, msg) => {
     success: success,
     msg: msg,
     result: result
+  };
+};
+
+const createValidationResult = (msg, success) => {
+  return {
+    success: success || false,
+    msg: msg
   };
 };
 

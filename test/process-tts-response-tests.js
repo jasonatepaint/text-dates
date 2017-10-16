@@ -42,15 +42,23 @@ suite('Process Text-to-Speech Responses', function() {
   });
 
   test('Single day, with timePeriod', () => {
-    let actual = svc.processTtsResponse(testUtils.buildResponse(dates, null, "09:00/13:00", null, null, true));
+    let actual = svc.processTtsResponse(testUtils.buildResponse(dates, null, "09:00/13:00", null, null));
     assert.isTrue(actual.success);
     assert.equal(actual.result.length, 1);
     assert.equal(actual.result[0].startDate, e(dates[0], "09:00"));
     assert.equal(actual.result[0].endDate, e(dates[0], "13:00"));
   });
 
-  test('Single day, with consecutive times (between)', () => {
-    let actual = svc.processTtsResponse(testUtils.buildResponse(dates, null, ["09:00", "13:00"]));
+  test('Single day, with consecutive times (timeDeclation == between)', () => {
+    let actual = svc.processTtsResponse(testUtils.buildResponse(dates, null, ["09:00", "13:00"], "between"));
+    assert.isTrue(actual.success);
+    assert.equal(actual.result.length, 1);
+    assert.equal(actual.result[0].startDate, e(dates[0], "09:00"));
+    assert.equal(actual.result[0].endDate, e(dates[0], "13:00"));
+  });
+
+  test('Single day, with consecutive times (operator == through)', () => {
+    let actual = svc.processTtsResponse(testUtils.buildResponse(dates, null, ["09:00", "13:00"], "at", "through"));
     assert.isTrue(actual.success);
     assert.equal(actual.result.length, 1);
     assert.equal(actual.result[0].startDate, e(dates[0], "09:00"));
@@ -98,7 +106,7 @@ suite('Process Text-to-Speech Responses', function() {
 
   test('Multiple non-consecutive days, with timePeriod', () => {
     dates.push(moment().add(daysAhead + 2, 'days').format(utils.dateFormats.dateOnly));
-    let actual = svc.processTtsResponse(testUtils.buildResponse(dates, "and", "09:00/10:00", "between", "and", true));
+    let actual = svc.processTtsResponse(testUtils.buildResponse(dates, "and", "09:00/10:00", "between", "and"));
     assert.isTrue(actual.success);
     assert.equal(actual.result.length, 2);
     for(let i in dates) {
@@ -119,7 +127,7 @@ suite('Process Text-to-Speech Responses', function() {
   });
 
   test('start and end time before business hours', () => {
-    let actual = svc.processTtsResponse(testUtils.buildResponse(dates, null, ["03:00", "06:00"]));
+    let actual = svc.processTtsResponse(testUtils.buildResponse(dates, null, ["03:00", "06:00"], "between"));
     assert.isTrue(actual.success);
     assert.equal(actual.result.length, 1);
     //Should be PM
@@ -128,7 +136,7 @@ suite('Process Text-to-Speech Responses', function() {
   });
 
   test('start time after business hours', () => {
-    let actual = svc.processTtsResponse(testUtils.buildResponse(dates, null, ["21:00", "23:00"]));
+    let actual = svc.processTtsResponse(testUtils.buildResponse(dates, null, ["21:00", "23:00"], "between"));
     assert.isTrue(actual.success);
     assert.equal(actual.result.length, 1);
     //Should be AM
@@ -137,7 +145,7 @@ suite('Process Text-to-Speech Responses', function() {
   });
 
   test('start time not adjusted and end time after business hours', () => {
-    let actual = svc.processTtsResponse(testUtils.buildResponse(dates, null, ["10:00", "21:00"], "at"));
+    let actual = svc.processTtsResponse(testUtils.buildResponse(dates, null, ["10:00", "21:00"], "between"));
     assert.isTrue(actual.success);
     assert.equal(actual.result.length, 1);
     //End Date is after hours, but since startTime wasn't adjust, we shouldn't adjust end time
