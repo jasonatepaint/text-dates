@@ -4852,6 +4852,18 @@ pkg-dir@^2.0.0:
   dependencies:
     find-up "^2.1.0"
 
+plain-text-date-parser@glg/plain-text-date-parser:
+  version "1.0.0"
+  resolved "git+ssh://git@github.com/glg/plain-text-date-parser.git#0b8d567de55484b22046ebc6dcb8f551fe7bd6d5"
+  dependencies:
+    apiai "4.0.3"
+    apiai-promise "1.0.0"
+    bluebird "3.5.1"
+    lodash "4.17.4"
+    moment "2.18.1"
+    moment-range "3.0.3"
+    uuid "3.1.0"
+
 pluralize@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/pluralize/-/pluralize-4.0.0.tgz#59b708c1c0190a2f692f1c7618c446b052fd1762"

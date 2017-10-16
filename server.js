@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const app = express();
 const bodyParser = require('body-parser');
-const parseDates = require('./server/dateRangeService').parseDates;
+const parseSvc = require('plain-text-date-parser').availability;
 
 app.use(express.static('./build'));
 app.use(bodyParser.urlencoded({
@@ -20,7 +20,7 @@ app.use(function(req, res, next) {
 });
 
 app.post('/api/dates', function(req, res) {
-  return parseDates(req.body.phrase)
+  return parseSvc.parseDates(req.body.phrase)
     .then(result => res.send(result));
 });
 

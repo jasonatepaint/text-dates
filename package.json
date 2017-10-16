@@ -13,6 +13,7 @@
     "lodash": "4.17.4",
     "moment": "2.18.1",
     "moment-range": "3.0.3",
+    "plain-text-date-parser": "glg/plain-text-date-parser#master",
     "react": "16.0.0",
     "react-bootstrap": "0.31.3",
     "react-dom": "16.0.0",
