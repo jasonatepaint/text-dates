@@ -5,8 +5,8 @@ import './App.css';
 import fetchData from './services/fetchData';
 import _ from 'lodash';
 import moment from 'moment';
-import annyang from 'annyang';
 import FontAwesome from 'react-fontawesome';
+import Client from 'speech-to-text-client';
 
 class App extends Component {
 
@@ -16,8 +16,32 @@ class App extends Component {
       value: '',
       spinner: false,
       dateBlocks: [],
-      errorMessage: null
-    }
+      errorMessage: null,
+      audioSupported: false,
+      speechStatus: ""
+    };
+  }
+
+  componentDidMount() {
+    const canvas = document.getElementById("visualizer");
+    this.speechClient = new Client("ws://localhost:8123", canvas);
+
+    const self = this;
+    this.speechClient.on("supported", function(audioSupported) {
+      console.log("Is Supported", audioSupported);
+      self.setState({audioSupported: audioSupported});
+    });
+
+    this.speechClient.on("state", function(status) {
+      console.log("STATE CHANGE", status);
+      self.setState({speechStatus: status})
+    });
+
+    this.speechClient.on("result", function(result) {
+      console.log("RESULT", result);
+      self.setState({value: result});
+      self.getDateBlock();
+    })
   }
 
   handleChange = (e) => {
@@ -40,28 +64,24 @@ class App extends Component {
       });
   };
 
-  buildDates = (dates) => {
+  buildDates = (dates, idx) => {
     return dates.map(date => {
       let start = moment(date.startDate).format("ddd MM-DD-YYYY h:mma");
       let end = moment(date.endDate).format("h:mma");
       return (
-        <h3><Label>{start} - {end}</Label></h3>
+        <h3 key={idx}><Label>{start} - {end}</Label></h3>
       )
     });
   };
 
-  setAnnyangCallback = (phrases) => {
-    this.setState( {value: phrases[0]} );
-    annyang.abort();
-  }
-
   handleMicrophoneClick = (e) => { 
     e.preventDefault();
-    annyang.addCallback('result', this.setAnnyangCallback);
-    annyang.start();
+    this.speechClient.startListening();
   };
 
   render() {
+    const height = this.state.speechStatus === "Listening" ? "50px" : "0px";
+    const speechStyle = { height: height };
     return (
       <div className="App">
         <header className="App-header">
@@ -83,6 +103,11 @@ class App extends Component {
           />
         </span>
         <Button bsStyle="primary" onClick={this.getDateBlock}>Add Availability Block</Button>
+
+        <div className="visualizer-container">
+          <canvas id="visualizer" className="visualizer" style={speechStyle}></canvas>
+        </div>
+
         <div className="examples">
           <b>Examples</b>
           <ul>
@@ -99,12 +124,12 @@ class App extends Component {
         <br />
         <br />
         <h4>Available on the following Date blocks:</h4>
-        { this.state.dateBlocks.map(block => {
+        { this.state.dateBlocks.map((block, idx) => {
             return (
-              <div>
+              <div key={idx}>
                 <Panel className="result">
                   <div>Phrase: {block.phrase}</div>
-                  { this.buildDates(block.dates) }
+                  { this.buildDates(block.dates, idx) }
                 </Panel>
               </div>
             )

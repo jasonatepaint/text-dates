@@ -63,5 +63,22 @@
 }
 
 .availability-mic {
-  padding: 0px 10px 0px 10px
+  padding: 0px 10px 0px 10px;
+}
+
+.availability-mic:hover {
+  cursor: pointer;
+  color: blue;
+}
+
+
+.visualizer-container {
+  width: 100%;
+}
+
+.visualizer {
+  width: 50%;
+  height: 50px;
+  z-index: -1;
+  margin: 0 auto;
 }

@@ -20,6 +20,7 @@
     "react-fontawesome": "1.6.1",
     "react-mic": "9.0.0",
     "react-scripts": "1.0.14",
+    "speech-to-text-client": "jasonatepaint/speech-to-text-client",
     "uuid": "3.1.0"
   },
   "devDependencies": {
